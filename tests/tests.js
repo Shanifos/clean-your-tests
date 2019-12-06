@@ -1,18 +1,29 @@
+const chai = require('chai')
+const sinon = require('sinon')
+const sinonChai = require('sinon-chai')
 const { expect } = require('chai')
-const { describe, it } = require('mocha')
+
+const { beforeEach, afterEach, describe, it } = require('mocha')
 const employee = require('./employee')
 const products = require('./products')
 const pricing = require('../pricing')
 
+chai.use(sinonChai)
 describe('pricing', () => {
   describe('formatPrice', () => {
-    it('return the price with 2 decimal places', () => {})
-    let formatprice = pricing.formatPrice(33.323443)
-    expect(formatprice).to.equal(33.32)
+    it('return the price with 2 decimal places', () => {
+      const formatprice = pricing.formatPrice(33.323)
+      expect(formatprice).to.equal(33.32)
+    })
+
+    it('returns 2 decimal places for a whole number', () => {
+      const formatPrice = pricing.formatPrice(10)
+      expect(formatPrice).to.equal(10.00)
+    })
   })
 
   describe('getEmployerContribution', () => {
-    it('return contribution if employee has contributed ', () => {
+    it('return contribution amount when contribution type is dollars', () => {
       const contributionMode = products.longTermDisability.employerContribution
       const price = 43.75
       const contribution = pricing.getEmployerContribution(
@@ -21,7 +32,7 @@ describe('pricing', () => {
       )
       expect(contribution).to.equal(10)
     })
-    it('return contribution if employee has not contributed', () => {
+    it('returns the calulation of the price by taking the percentage of the price if the employerContribution mode is percentage', () => {
       const contributionMode = products.voluntaryLife.employerContribution
       const price = 43.75
       const contribution = pricing.getEmployerContribution(
@@ -32,6 +43,35 @@ describe('pricing', () => {
     })
   })
 
+  describe('calculateVolLifePrice', () => {
+    it('return the price before employer contribution of the vol life product only employee', () => {
+      const selectedOptions = {
+        familyMembersToCover: ['ee'],
+        coverageLevel: [{ role: 'ee', coverage: 125000 }]
+      }
+      const price = pricing.calculateVolLifePrice(
+        products.voluntaryLife,
+        selectedOptions
+      )
+      expect(price).to.equal(43.75)
+    })
+
+    it('return the price before employer contribution of the vol life product for employee and spouse', () => {
+      const selectedOptions = {
+        familyMembersToCover: ['ee', 'sp'],
+        coverageLevel: [
+          { role: 'ee', coverage: 200000 },
+          { role: 'sp', coverage: 75000 }
+        ]
+      }
+      const price = pricing.calculateVolLifePrice(
+        products.voluntaryLife,
+        selectedOptions
+      )
+      expect(price).to.equal(79)
+    })
+
+  })
   describe('calculateVolLifePricePerRole', () => {
     it('return the price for VolLife depending on the role', () => {
       const coverageLevel = [{ role: 'ee', coverage: 125000 }]
@@ -44,35 +84,36 @@ describe('pricing', () => {
       expect(VolLifePrice).to.equal(43.75)
     })
   })
+
   describe(' calculateLTDPrice', () => {
-    it('return false if the role is not ee', () => {
-      const selectedOptions = {
-        familyMembersToCover: ['ro'],
-        coverageLevel: [{ role: 'ee', coverage: 125000 }]
-      }
-      const LTDPrice = pricing.calculateLTDPrice(
-        products.longTermDisability,
-        employee,
-        selectedOptions
-      )
-      expect(LTDPrice).to.equal(0)
-    })
-    it('return the price of ltd if the person role is ee', () => {
+    it('return the price of ltd before employor contribution', () => {
       const selectedOptions = {
         familyMembersToCover: ['ee'],
-        coverageLevel: [{ role: 'ee', coverage: 125000 }]
       }
       const LTDPrice = pricing.calculateLTDPrice(
         products.longTermDisability,
         employee,
         selectedOptions
       )
-      // console.log(products.voluntaryLife)
-
       expect(LTDPrice).to.equal(32.04)
     })
   })
   describe('calculateProductPrice', () => {
+    let calculateLTDPriceSpy, formatPriceSpy, calculateVolLifePriceSpy, getEmployerContributionSpy, sandbox
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox()
+
+      formatPriceSpy = sandbox.spy(pricing, 'formatPrice')
+      calculateVolLifePriceSpy = sandbox.spy(pricing, 'calculateVolLifePrice')
+      calculateLTDPriceSpy = sandbox.spy(pricing, 'calculateLTDPrice')
+      getEmployerContributionSpy = sandbox.spy(pricing, 'getEmployerContribution')
+
+    })
+    afterEach(() => {
+      sandbox.restore()
+    })
+
     it('returns the price for a voluntary life product for a single employee', () => {
       const selectedOptions = {
         familyMembersToCover: ['ee'],
@@ -85,6 +126,8 @@ describe('pricing', () => {
       )
 
       expect(price).to.equal(39.37)
+      expect(getEmployerContributionSpy).to.have.callCount(1)
+
     })
 
     it('returns the price for a voluntary life product for an employee with a spouse', () => {
@@ -102,6 +145,9 @@ describe('pricing', () => {
       )
 
       expect(price).to.equal(71.09)
+      expect(formatPriceSpy).to.have.callCount(1)
+      expect(calculateVolLifePriceSpy).to.have.callCount(1)
+      expect(getEmployerContributionSpy).to.have.callCount(1)
     })
 
     it('returns the price for a disability product for an employee', () => {
@@ -115,6 +161,9 @@ describe('pricing', () => {
       )
 
       expect(price).to.equal(22.04)
+      expect(formatPriceSpy).to.have.callCount(1)
+      expect(calculateLTDPriceSpy).to.have.callCount(1)
+      expect(getEmployerContributionSpy).to.have.callCount(1)
     })
 
     it('throws an error on unknown product type', () => {
