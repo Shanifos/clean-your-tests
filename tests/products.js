@@ -3,15 +3,28 @@ const voluntaryLife = {
   vendor: 'Sunlife US',
   type: 'volLife',
   employerContribution: {
-    mode: 'percentage', contribution: 10,
+    mode: 'percentage',
+    contribution: 10
   },
   coverage: [
-    { role: 'ee', minCoverage: 25000, maxCoverage: 300000, guaranteeIssue: 50000, increment: 10000 },
-    { role: 'sp', minCoverage: 10000, maxCoverage: 100000, guaranteeIssue: 25000, increment: 5000 },
+    {
+      role: 'ee',
+      minCoverage: 25000,
+      maxCoverage: 300000,
+      guaranteeIssue: 50000,
+      increment: 10000
+    },
+    {
+      role: 'sp',
+      minCoverage: 10000,
+      maxCoverage: 100000,
+      guaranteeIssue: 25000,
+      increment: 5000
+    }
   ],
   costs: [
     { role: 'ee', costDivisor: 1000, price: 0.35 },
-    { role: 'sp', costDivisor: 1000, price: 0.12 },
+    { role: 'sp', costDivisor: 1000, price: 0.12 }
   ]
 }
 
@@ -38,5 +51,5 @@ const commuter = {
 module.exports = {
   voluntaryLife,
   longTermDisability,
-  commuter,
+  commuter
 }
