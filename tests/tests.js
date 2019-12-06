@@ -99,11 +99,11 @@ describe('pricing', () => {
     })
   })
   describe('calculateProductPrice', () => {
-    let calculateLTDPriceSpy, formatPriceSpy, calculateVolLifePriceSpy, getEmployerContributionSpy, sandbox
+    let calculateLTDPriceSpy, calculateVolLifePricePerRoleSpy, formatPriceSpy, calculateVolLifePriceSpy, getEmployerContributionSpy, sandbox
 
     beforeEach(() => {
       sandbox = sinon.createSandbox()
-
+      calculateVolLifePricePerRoleSpy = sandbox.spy(pricing, 'calculateVolLifePricePerRole')
       formatPriceSpy = sandbox.spy(pricing, 'formatPrice')
       calculateVolLifePriceSpy = sandbox.spy(pricing, 'calculateVolLifePrice')
       calculateLTDPriceSpy = sandbox.spy(pricing, 'calculateLTDPrice')
@@ -127,6 +127,7 @@ describe('pricing', () => {
 
       expect(price).to.equal(39.37)
       expect(getEmployerContributionSpy).to.have.callCount(1)
+      expect(calculateVolLifePricePerRoleSpy).to.have.callCount(1)
 
     })
 
@@ -147,6 +148,7 @@ describe('pricing', () => {
       expect(price).to.equal(71.09)
       expect(formatPriceSpy).to.have.callCount(1)
       expect(calculateVolLifePriceSpy).to.have.callCount(1)
+
       expect(getEmployerContributionSpy).to.have.callCount(1)
     })
 
