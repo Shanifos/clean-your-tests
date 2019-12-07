@@ -89,14 +89,14 @@ describe('pricing', () => {
       const selectedOptions = {
         Benefit: 'train'
       }
-      const price = pricing.commuterPrice(selectedOptions)
+      const price = pricing.commuterPrice(products.commuter, selectedOptions)
       expect(price).to.equal(84.75)
     })
     it('return the price(pre employer contribution) if employee commutes to work by car and parks in the company lot', () => {
       const selectedOptions = {
         Benefit: 'parking'
       }
-      const price = pricing.commuterPrice(selectedOptions)
+      const price = pricing.commuterPrice(products.commuter, selectedOptions)
 
       expect(price).to.equal(250)
     })
@@ -115,12 +115,13 @@ describe('pricing', () => {
     })
   })
   describe('calculateProductPrice', () => {
-    let calculateLTDPriceSpy, calculateVolLifePricePerRoleSpy, formatPriceSpy, calculateVolLifePriceSpy, getEmployerContributionSpy, sandbox
+    let calculateLTDPriceSpy, calculateVolLifePricePerRoleSpy, calulateCommuterPriceSpy, formatPriceSpy, calculateVolLifePriceSpy, getEmployerContributionSpy, sandbox
 
     beforeEach(() => {
       sandbox = sinon.createSandbox()
       calculateVolLifePricePerRoleSpy = sandbox.spy(pricing, 'calculateVolLifePricePerRole')
       formatPriceSpy = sandbox.spy(pricing, 'formatPrice')
+      calulateCommuterPriceSpy = sandbox.spy(pricing, 'calulateCommuterPrice')
       calculateVolLifePriceSpy = sandbox.spy(pricing, 'calculateVolLifePrice')
       calculateLTDPriceSpy = sandbox.spy(pricing, 'calculateLTDPrice')
       getEmployerContributionSpy = sandbox.spy(pricing, 'getEmployerContribution')
@@ -128,6 +129,27 @@ describe('pricing', () => {
     })
     afterEach(() => {
       sandbox.restore()
+    })
+
+    it('returns the price(after employer contribution) the employee pays if they take the train', () => {
+      const selectedOptions = {
+        Benefit: 'train'
+      }
+      const price = pricing.calulateCommuterPrice(products.commuter, selectedOptions)
+      expect(price).to.equal(9.75)
+      expect(calulateCommuterPriceSpy).to.have.callCount(1)
+      expect(formatPriceSpy).to.have.callCount(1)
+    })
+
+    it('returns the price(after employer contribution) the commuter pays if they they drive', () => {
+      const selectedOptions = {
+        Benefit: 'parking'
+      }
+      const price = pricing.calulateCommuterPrice(products.commuter, selectedOptions)
+
+      expect(price).to.equal(175)
+      expect(calulateCommuterPriceSpy).to.have.callCount(1)
+      expect(formatPriceSpy).to.have.callCount(1)
     })
 
     it('returns the price for a voluntary life product for a single employee', () => {
