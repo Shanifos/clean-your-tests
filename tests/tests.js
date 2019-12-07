@@ -84,7 +84,23 @@ describe('pricing', () => {
       expect(VolLifePrice).to.equal(43.75)
     })
   })
+  describe('calulateCommuterPrice', () => {
+    it('return the price(pre employer contribution) if employee commutes to work by train', () => {
+      const selectedOptions = {
+        Benefit: 'train'
+      }
+      const price = pricing.commuterPrice(selectedOptions)
+      expect(price).to.equal(84.75)
+    })
+    it('return the price(pre employer contribution) if employee commutes to work by car and parks in the company lot', () => {
+      const selectedOptions = {
+        Benefit: 'parking'
+      }
+      const price = pricing.commuterPrice(selectedOptions)
 
+      expect(price).to.equal(250)
+    })
+  })
   describe(' calculateLTDPrice', () => {
     it('return the price of ltd before employor contribution', () => {
       const selectedOptions = {
@@ -126,6 +142,7 @@ describe('pricing', () => {
       )
 
       expect(price).to.equal(39.37)
+      expect(calculateVolLifePriceSpy).to.have.callCount(1)
       expect(getEmployerContributionSpy).to.have.callCount(1)
       expect(calculateVolLifePricePerRoleSpy).to.have.callCount(1)
 
@@ -148,8 +165,8 @@ describe('pricing', () => {
       expect(price).to.equal(71.09)
       expect(formatPriceSpy).to.have.callCount(1)
       expect(calculateVolLifePriceSpy).to.have.callCount(1)
-
       expect(getEmployerContributionSpy).to.have.callCount(1)
+      expect(calculateVolLifePricePerRoleSpy).to.have.callCount(2)
     })
 
     it('returns the price for a disability product for an employee', () => {
