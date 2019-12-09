@@ -87,16 +87,16 @@ describe('pricing', () => {
   describe('calulateCommuterPrice', () => {
     it('return the price(pre employer contribution) if employee commutes to work by train', () => {
       const selectedOptions = {
-        Benefit: 'train'
+        benefit: 'train'
       }
-      const price = pricing.commuterPrice(selectedOptions)
+      const price = pricing.calcutateCommuterPrice(products.commuter, selectedOptions)
       expect(price).to.equal(84.75)
     })
     it('return the price(pre employer contribution) if employee commutes to work by car and parks in the company lot', () => {
       const selectedOptions = {
-        Benefit: 'parking'
+        benefit: 'parking'
       }
-      const price = pricing.commuterPrice(selectedOptions)
+      const price = pricing.calcutateCommuterPrice(products.commuter, selectedOptions)
 
       expect(price).to.equal(250)
     })
